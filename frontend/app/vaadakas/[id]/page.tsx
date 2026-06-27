@@ -1,0 +1,240 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { api } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
+import { getImageUrl } from '@/lib/utils';
+import { ArrowLeft, MapPin, Star, ShieldCheck, Package, AlertCircle } from 'lucide-react';
+import Link from 'next/link';
+import BookingModal from '@/components/BookingModal';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { useToast } from '@/contexts/ToastContext';
+import Modal from '@/components/ui/Modal';
+import { Edit2, Trash2 } from 'lucide-react';
+
+export default function VaadakaDetailsPage() {
+    const params = useParams();
+    const id = Array.isArray(params.id) ? params.id[0] : params.id;
+    const [vaadaka, setVaadaka] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const { user } = useAuth();
+    const router = useRouter();
+    const { showToast } = useToast();
+
+    useEffect(() => {
+        if (id) {
+            loadVaadaka();
+        }
+    }, [id]);
+
+    const loadVaadaka = async () => {
+        try {
+            const data = await api.getVaadaka(id as string);
+            setVaadaka(data);
+        } catch (err) {
+            setError('Failed to load item details');
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDeleteVaadaka = async () => {
+        try {
+            setIsDeleting(true);
+            const token = localStorage.getItem('accessToken');
+            if (!token) throw new Error('Not authenticated');
+
+            await api.deleteVaadaka(token, vaadaka.id);
+            showToast('Item deleted successfully', 'success');
+            router.push('/dashboard');
+        } catch (error: any) {
+            showToast(error.message || 'Failed to delete item', 'error');
+            setIsDeleting(false);
+            setIsDeleteModalOpen(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen pt-24 pb-12 flex items-center justify-center" style={{ background: 'var(--bg-primary)' }}>
+                <div className="w-6 h-6 border-2 rounded-full animate-spin" style={{ borderColor: 'var(--highlight)', borderTopColor: 'transparent' }} />
+            </div>
+        );
+    }
+
+    if (error || !vaadaka) {
+        return (
+            <div className="min-h-screen pt-24 pb-12 flex items-center justify-center" style={{ background: 'var(--bg-primary)' }}>
+                <div className="text-center">
+                    <AlertCircle className="w-12 h-12 mx-auto mb-4" style={{ color: 'var(--highlight)' }} />
+                    <h2 className="text-xl font-bold mb-3" style={{ color: 'var(--text-primary)' }}>Item Not Found</h2>
+                    <Link href="/vaadakas" className="font-bold text-sm uppercase tracking-widest no-underline transition-colors"
+                        style={{ color: 'var(--highlight)' }}>
+                        ← Back to Browse
+                    </Link>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen pt-24 pb-12" style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+            <div className="container-custom">
+                {/* Back Button */}
+                <Link href="/vaadakas" className="inline-flex items-center mb-8 transition-colors uppercase tracking-widest text-sm font-bold no-underline"
+                    style={{ color: 'var(--text-muted)' }}
+                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)'}
+                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'}>
+                    <ArrowLeft className="w-4 h-4 mr-2" /> Back to Browse
+                </Link>
+
+                <div className="grid lg:grid-cols-2 gap-12">
+                    {/* Image Section */}
+                    <div className="space-y-4">
+                        <div className="aspect-square rounded-xl overflow-hidden relative group" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
+                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                            {vaadaka.images && vaadaka.images.length > 0 ? (
+                                <img
+                                    src={getImageUrl(vaadaka.images[0])}
+                                    alt={vaadaka.name}
+                                    className="w-full h-full object-contain p-8 group-hover:scale-105 transition-transform duration-500"
+                                />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                    <Package size={64} className="text-gray-700" />
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Details Section */}
+                    <div className="space-y-8">
+                        <div>
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className={`px-2 py-1 text-[10px] font-bold uppercase tracking-widest border rounded ${vaadaka.quantity_available > 0
+                                    ? 'border-green-500/50 bg-green-500/10 text-green-400'
+                                    : 'border-red-500/50 bg-red-500/10 text-red-400'
+                                    }`}>
+                                    {vaadaka.quantity_available > 0 ? 'In Stock' : 'Out of Stock'}
+                                </span>
+                                <span className="px-2 py-1 text-[10px] font-bold uppercase tracking-widest border border-white/20 text-gray-400 rounded">
+                                    {vaadaka.category?.name || 'Item'}
+                                </span>
+                            </div>
+                            <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter leading-none mb-4">
+                                {vaadaka.name}
+                            </h1>
+                            <div className="flex items-center gap-4 text-gray-400">
+                                <div className="flex items-center gap-1">
+                                    <MapPin className="w-4 h-4" />
+                                    <span>{vaadaka.shop?.address ? vaadaka.shop.address : 'Location N/A'}</span>
+                                </div>
+                                <div className="w-1 h-1 bg-gray-600 rounded-full"></div>
+                                <div className="flex items-center gap-1 text-primary">
+                                    <Star className="w-4 h-4 fill-current" />
+                                    <span>{vaadaka.shop?.rating || 'New'}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex items-end gap-2 pb-8" style={{ borderBottom: '1px solid var(--border)' }}>
+                            <div className="text-5xl font-black leading-none" style={{ color: 'var(--highlight)', fontFamily: 'var(--font-bebas), sans-serif' }}>
+                                ₹{Math.floor(vaadaka.price_per_day)}
+                            </div>
+                            <div className="text-sm font-mono uppercase mb-2" style={{ color: 'var(--text-muted)' }}>
+                                / Per Day
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <h3 className="text-sm font-bold uppercase tracking-wider text-gray-400">Description</h3>
+                            <p className="text-gray-300 leading-relaxed">
+                                {vaadaka.description}
+                            </p>
+                        </div>
+
+                        <div className="p-5 space-y-4" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: 8 }}>
+                            <div className="flex justify-between items-center">
+                                <span className="text-sm" style={{ color: 'var(--text-muted)' }}>Owner / Shop</span>
+                                <span className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{vaadaka.shop?.name || '—'}</span>
+                            </div>
+                            <div className="flex justify-between items-center" style={{ borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
+                                <span className="text-sm" style={{ color: 'var(--text-muted)' }}>Refundable Deposit</span>
+                                <span className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>₹{vaadaka.deposit_amount}</span>
+                            </div>
+                        </div>
+
+                        <div className="pt-4">
+                            {user?.id != null && vaadaka.shop?.owner?.id != null && String(user.id) === String(vaadaka.shop.owner.id) ? (
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => router.push(`/vaadakas/edit/${vaadaka.id}`)}
+                                        className="flex-1 py-4 font-black uppercase tracking-widest text-base transition-all flex items-center justify-center gap-2 cursor-pointer"
+                                        style={{ background: 'var(--bg-surface-2)', color: 'var(--text-primary)', border: '1px solid var(--border)', borderRadius: 6 }}
+                                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = '#D20000'; (e.currentTarget as HTMLElement).style.color = '#D20000'; }}
+                                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)'; }}
+                                    >
+                                        <Edit2 className="w-5 h-5" />
+                                        Edit Item
+                                    </button>
+                                    <button
+                                        onClick={() => setIsDeleteModalOpen(true)}
+                                        className="flex-1 py-4 font-black uppercase tracking-widest text-base transition-all flex items-center justify-center gap-2 cursor-pointer"
+                                        style={{ background: 'rgba(210,0,0,0.1)', color: '#D20000', border: '1px solid rgba(210,0,0,0.3)', borderRadius: 6 }}
+                                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#D20000'; (e.currentTarget as HTMLElement).style.color = 'white'; }}
+                                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(210,0,0,0.1)'; (e.currentTarget as HTMLElement).style.color = '#D20000'; }}
+                                    >
+                                        <Trash2 className="w-5 h-5" />
+                                        Delete
+                                    </button>
+                                </div>
+                            ) : (
+                                <>
+                                    <button
+                                        onClick={() => setIsBookingModalOpen(true)}
+                                        disabled={vaadaka.quantity_available <= 0}
+                                        className="w-full py-5 font-black uppercase tracking-widest text-lg transition-all flex items-center justify-center gap-3 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                        style={{ background: 'var(--highlight)', color: 'var(--bg-primary)', border: 'none', borderRadius: 8 }}
+                                        onMouseEnter={e => { if (vaadaka.quantity_available > 0) (e.currentTarget as HTMLElement).style.background = 'var(--highlight-hover)'; }}
+                                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--highlight)'; }}
+                                    >
+                                        <ShieldCheck className="w-6 h-6" />
+                                        {vaadaka.quantity_available > 0 ? 'Book This Item' : 'Currently Unavailable'}
+                                    </button>
+                                    <p className="text-center text-xs mt-4 uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                                        Secure booking · Verified Owner · Instant Confirmation
+                                    </p>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Booking Modal */}
+            <BookingModal
+                vaadaka={vaadaka}
+                isOpen={isBookingModalOpen}
+                onClose={() => setIsBookingModalOpen(false)}
+            />
+
+            {/* Delete Confirmation Modal */}
+            <Modal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={handleDeleteVaadaka}
+                title="Decommission Item"
+                description={`Are you sure you want to permanently remove ${vaadaka?.name} from your inventory? This action cannot be undone and will cancel any pending requests.`}
+                confirmText={isDeleting ? "DECOMMISSIONING..." : "CONFIRM DELETION"}
+                cancelText="CANCEL"
+                variant="danger"
+            />
+        </div>
+    );
+}
