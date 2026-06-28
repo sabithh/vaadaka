@@ -8,7 +8,7 @@ import {
     User as UserIcon, Mail, Phone, Calendar, Package,
     Shield, ShieldOff, Trash2, ArrowLeft, Wrench,
     CreditCard, CheckCircle, XCircle, Crown, Loader2,
-    ToggleLeft, ToggleRight, Edit3, AlertTriangle
+    ToggleLeft, ToggleRight, Edit3, AlertTriangle, CalendarCheck, Box
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -21,6 +21,7 @@ export default function UserDetailsPage() {
 
     const [user, setUser] = useState<any>(null);
     const [vaadakas, setVaadakas] = useState<any[]>([]);
+    const [bookings, setBookings] = useState<any[]>([]);
     const [subscription, setSubscription] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
@@ -33,13 +34,13 @@ export default function UserDetailsPage() {
     const loadAll = useCallback(async () => {
         if (!accessToken || !id) return;
         try {
-            const [userData, vaadakasData, subData] = await Promise.all([
-                api.getAdminUser(accessToken, id as string),
-                api.adminGetUserVaadakas(accessToken, id as string).catch(() => []),
+            const [detailsData, subData] = await Promise.all([
+                api.adminGetUserDetails(accessToken, id as string),
                 api.adminGetUserSubscription(accessToken, id as string).catch(() => null),
             ]);
-            setUser(userData);
-            setVaadakas(vaadakasData || []);
+            setUser(detailsData.user);
+            setVaadakas(detailsData.listings || []);
+            setBookings(detailsData.bookings || []);
             setSubscription(subData);
         } catch (e) {
             console.error(e);
@@ -282,6 +283,53 @@ export default function UserDetailsPage() {
                     )}
                 </div>
             )}
+
+            {/* ── Bookings Made ── */}
+            <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
+                <h2 className="text-lg font-bold text-white flex items-center gap-2 mb-4">
+                    <CalendarCheck size={20} className="text-[#DC2626]" /> Bookings Made ({bookings.length})
+                </h2>
+                {bookings.length === 0 ? (
+                    <div className="text-gray-500 text-sm text-center py-6 border border-neutral-800 rounded-lg">
+                        No bookings made yet.
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                            <thead>
+                                <tr className="border-b border-neutral-800">
+                                    <th className="text-left py-2 px-3 text-gray-500 font-medium uppercase text-xs tracking-wider">Item</th>
+                                    <th className="text-left py-2 px-3 text-gray-500 font-medium uppercase text-xs tracking-wider">Duration</th>
+                                    <th className="text-left py-2 px-3 text-gray-500 font-medium uppercase text-xs tracking-wider">Total</th>
+                                    <th className="text-left py-2 px-3 text-gray-500 font-medium uppercase text-xs tracking-wider">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {bookings.map((booking: any) => (
+                                    <tr key={booking.id} className="border-b border-neutral-800/50 hover:bg-neutral-800/30 transition-colors">
+                                        <td className="py-3 px-3 text-white font-medium">
+                                            {typeof booking.vaadaka === 'object' ? booking.vaadaka.name : booking.vaadaka_name || 'Item'}
+                                        </td>
+                                        <td className="py-3 px-3 text-gray-400">
+                                            {booking.duration_hours} hours
+                                        </td>
+                                        <td className="py-3 px-3 text-white">₹{booking.total_amount}</td>
+                                        <td className="py-3 px-3">
+                                            <span className={`px-2 py-0.5 rounded text-xs font-bold ${
+                                                ['active', 'confirmed'].includes(booking.status) ? 'bg-green-500/10 text-green-400' :
+                                                booking.status === 'pending' ? 'bg-yellow-500/10 text-yellow-400' :
+                                                'bg-gray-500/10 text-gray-400'
+                                            }`}>
+                                                {booking.status}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </div>
 
             {/* ── Delete Modal ── */}
             {showDeleteModal && (

@@ -48,15 +48,16 @@ class VaadakaViewSet(viewsets.ModelViewSet):
         Uses a subquery to avoid JOIN issues with missing subscription data.
         """
         from django.utils import timezone
+        from datetime import timedelta
         
         # We wrap in a try-except in case the subscriptions table is missing during migrations,
         # but in normal operation we want to filter tightly.
         try:
             from apps.subscriptions.models import Subscription
-            # Get IDs of users with active subscriptions
+            # Get IDs of users with active subscriptions (with 5-day grace period)
             subscribed_user_ids = Subscription.objects.filter(
                 status='active',
-                end_date__gt=timezone.now()
+                end_date__gt=timezone.now() - timedelta(days=5)
             ).values_list('user_id', flat=True)
 
             return Vaadaka.objects.select_related('shop', 'category').filter(

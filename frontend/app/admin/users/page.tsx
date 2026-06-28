@@ -5,7 +5,8 @@ import { api } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { DataTable } from '@/components/admin/DataTable';
 import { ColumnDef } from '@tanstack/react-table';
-import { MoreHorizontal, ShieldAlert, CheckCircle2, XCircle } from 'lucide-react';
+import { MoreHorizontal, ShieldAlert, CheckCircle2, XCircle, Eye } from 'lucide-react';
+import Link from 'next/link';
 
 type User = {
   id: string;
@@ -68,6 +69,9 @@ const UserActionsCell = ({ user, onActionSuccess }: { user: User, onActionSucces
                 <>
                     <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)}></div>
                     <div className="absolute right-0 mt-2 w-32 bg-neutral-800 rounded-lg shadow-xl border border-neutral-700 z-50 overflow-hidden">
+                        <Link href={`/admin/users/${user.id}`} className="w-full text-left px-4 py-2 text-sm text-gray-200 hover:bg-neutral-700 flex items-center gap-2">
+                            <Eye size={14} /> View Details
+                        </Link>
                         <button onClick={() => { toggleActive(); setIsOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-gray-200 hover:bg-neutral-700">
                             {user.is_active ? 'Ban User' : 'Unban User'}
                         </button>

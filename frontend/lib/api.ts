@@ -284,6 +284,10 @@ class APIClient {
         });
     }
 
+    async adminGetUserDetails(token: string, id: string) {
+        return this.request<any>(`/api/admin/users/${id}/details/`, { token });
+    }
+
     async adminToggleVerifyUser(token: string, id: string) {
         return this.request<{ is_verified: boolean }>(`/api/admin/users/${id}/toggle_verify/`, {
             method: 'POST',

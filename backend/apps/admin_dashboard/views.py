@@ -150,6 +150,26 @@ class AdminUserViewSet(viewsets.ModelViewSet):
         user.save(update_fields=['is_staff'])
         return Response({'status': 'ok', 'is_staff': user.is_staff})
 
+    @action(detail=True, methods=['get'])
+    def details(self, request, pk=None):
+        user = self.get_object()
+        user_data = UserProfileSerializer(user).data
+        
+        # Get Bookings (renter)
+        bookings = Booking.objects.filter(renter=user).order_by('-created_at')
+        bookings_data = BookingSerializer(bookings, many=True).data
+
+        # Get Listings (provider)
+        shop_ids = user.shops.values_list('id', flat=True)
+        vaadakas = Vaadaka.objects.filter(shop_id__in=shop_ids).order_by('-created_at')
+        vaadakas_data = VaadakaSerializer(vaadakas, many=True).data
+
+        return Response({
+            'user': user_data,
+            'bookings': bookings_data,
+            'listings': vaadakas_data,
+        })
+
 
 class AdminBookingViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Booking.objects.all().order_by('-created_at')
