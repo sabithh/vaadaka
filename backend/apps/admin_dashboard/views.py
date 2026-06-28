@@ -213,12 +213,13 @@ class AdminProviderFinanceViewSet(viewsets.ReadOnlyModelViewSet):
             
             bookings = Booking.objects.filter(shop_id__in=shop_ids, payment_status='paid')
             total_revenue = bookings.aggregate(total=Sum('total_amount'))['total'] or 0
+            total_fees = bookings.aggregate(total=Sum('platform_fee'))['total'] or 0
             
-            # Combine subscription amounts if available
-            platform_fees = 0
+            unpaid_dues = total_fees
             try:
-                subs = Subscription.objects.filter(user=user, status__in=['active', 'expired'])
-                platform_fees = subs.aggregate(total=Sum('amount'))['total'] or 0
+                from apps.payments.models import ProviderInvoice
+                paid_invoices = ProviderInvoice.objects.filter(provider=user, status='paid').aggregate(total=Sum('total_due'))['total'] or 0
+                unpaid_dues = max(0, total_fees - paid_invoices)
             except Exception:
                 pass
 
@@ -229,6 +230,7 @@ class AdminProviderFinanceViewSet(viewsets.ReadOnlyModelViewSet):
                 'total_shops': len(shop_ids),
                 'total_bookings_handled': bookings.count(),
                 'provider_revenue': float(total_revenue),
-                'platform_fees_paid': float(platform_fees)
+                'platform_fees_paid': float(total_fees - unpaid_dues),
+                'unpaid_dues': float(unpaid_dues)
             })
         return results

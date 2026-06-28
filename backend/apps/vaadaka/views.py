@@ -53,21 +53,21 @@ class VaadakaViewSet(viewsets.ModelViewSet):
         # We wrap in a try-except in case the subscriptions table is missing during migrations,
         # but in normal operation we want to filter tightly.
         try:
-            from apps.subscriptions.models import Subscription
-            # Get IDs of users with active subscriptions (with 5-day grace period)
-            subscribed_user_ids = Subscription.objects.filter(
-                status='active',
-                end_date__gt=timezone.now() - timedelta(days=5)
-            ).values_list('user_id', flat=True)
+            from apps.payments.models import ProviderInvoice
+            
+            # Find users who have ANY overdue invoices (grace period exceeded)
+            overdue_user_ids = ProviderInvoice.objects.filter(
+                status='pending',
+                due_date__lt=timezone.now()
+            ).values_list('provider_id', flat=True)
 
             return Vaadaka.objects.select_related('shop', 'category').filter(
                 is_available=True
-            ).filter(
-                models.Q(shop__owner__is_superuser=True) |
-                models.Q(shop__owner_id__in=subscribed_user_ids)
+            ).exclude(
+                shop__owner_id__in=overdue_user_ids
             ).distinct()
-        except:
-            # Fallback for migrations
+        except Exception as e:
+            # Fallback for migrations or db issues
             return Vaadaka.objects.none()
 
     def perform_create(self, serializer):
