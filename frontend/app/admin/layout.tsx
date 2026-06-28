@@ -8,7 +8,8 @@ import {
     Users,
     CalendarCheck,
     Settings,
-    LogOut
+    LogOut,
+    PackageSearch
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -19,6 +20,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const navItems = [
         { name: 'Overview', href: '/admin', icon: LayoutDashboard },
         { name: 'Users', href: '/admin/users', icon: Users },
+        { name: 'Listings', href: '/admin/listings', icon: PackageSearch },
         { name: 'Bookings', href: '/admin/bookings', icon: CalendarCheck },
     ];
 

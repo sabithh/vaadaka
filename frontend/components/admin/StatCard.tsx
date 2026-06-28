@@ -19,7 +19,7 @@ export default function StatCard({
 }: StatCardProps) {
   const colorMap = {
     blue: { text: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/20' },
-    purple: { text: 'text-purple-400', bg: 'bg-purple-400/10', border: 'border-purple-400/20' },
+    purple: { text: 'text-red-500', bg: 'bg-red-500/10', border: 'border-red-500/20' },
     green: { text: 'text-green-400', bg: 'bg-green-400/10', border: 'border-green-400/20' },
     yellow: { text: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/20' },
     red: { text: 'text-red-400', bg: 'bg-red-400/10', border: 'border-red-400/20' },

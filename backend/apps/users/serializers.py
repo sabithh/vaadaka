@@ -73,10 +73,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'location_lat', 'location_lng',
             'is_verified', 'created_at', 'updated_at',
             'total_bookings', 'total_reviews',
-            'has_shop', 'is_superuser', 'is_staff',
+            'has_shop', 'is_superuser', 'is_staff', 'is_active',
             'subscription_status'
         ]
-        read_only_fields = ['id', 'is_verified', 'created_at', 'updated_at', 'has_shop', 'is_superuser', 'is_staff', 'subscription_status']
+        read_only_fields = ['id', 'is_verified', 'created_at', 'updated_at', 'has_shop', 'is_superuser', 'is_staff', 'is_active', 'subscription_status']
     
     def get_total_bookings(self, obj):
         """Get total number of bookings"""

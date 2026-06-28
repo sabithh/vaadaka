@@ -5,42 +5,42 @@ import { api } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { DataTable } from '@/components/admin/DataTable';
 import { ColumnDef } from '@tanstack/react-table';
-import { MoreHorizontal, ShieldAlert, CheckCircle2, XCircle } from 'lucide-react';
+import { MoreHorizontal, Box, CheckCircle2, XCircle } from 'lucide-react';
 
-type User = {
+type Listing = {
   id: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  is_active: boolean;
-  is_staff: boolean;
-  date_joined: string;
+  name: string;
+  price_per_day: number;
+  is_available: boolean;
+  category: { name: string };
+  shop: { name: string };
+  created_at: string;
 };
 
-export default function AdminUsersPage() {
+export default function AdminListingsPage() {
     const { accessToken } = useAuth();
-    const [users, setUsers] = useState<User[]>([]);
+    const [listings, setListings] = useState<Listing[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (accessToken) loadUsers();
+        if (accessToken) loadListings();
     }, [accessToken]);
 
-    const loadUsers = async () => {
+    const loadListings = async () => {
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/users/`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/vaadakas/`, {
                 headers: { 'Authorization': `Bearer ${accessToken}` }
             });
             const data = await response.json();
-            setUsers(Array.isArray(data) ? data : data.results || []);
+            setListings(Array.isArray(data) ? data : data.results || []);
         } catch (error) {
-            console.error('Failed to load users', error);
+            console.error('Failed to load listings', error);
         } finally {
             setLoading(false);
         }
     };
 
-    const columns = useMemo<ColumnDef<User>[]>(
+    const columns = useMemo<ColumnDef<Listing>[]>(
         () => [
             {
                 accessorKey: 'id',
@@ -48,50 +48,50 @@ export default function AdminUsersPage() {
                 cell: info => <span className="text-xs text-gray-500 font-mono">{String(info.getValue()).substring(0,8)}...</span>,
             },
             {
-                accessorFn: row => `${row.first_name} ${row.last_name}`,
-                id: 'name',
-                header: 'Full Name',
-                cell: info => <span className="font-medium text-white">{info.getValue() as string}</span>,
+                accessorKey: 'name',
+                header: 'Item Name',
+                cell: info => (
+                    <div className="flex items-center gap-2">
+                        <Box size={14} className="text-red-500" />
+                        <span className="font-medium text-white">{info.getValue() as string}</span>
+                    </div>
+                ),
             },
             {
-                accessorKey: 'email',
-                header: 'Email',
+                accessorFn: row => row.category?.name || 'N/A',
+                id: 'category',
+                header: 'Category',
+                cell: info => <span className="text-sm text-gray-400">{info.getValue() as string}</span>,
             },
             {
-                accessorKey: 'is_staff',
-                header: 'Role',
-                cell: info => {
-                    const isStaff = info.getValue() as boolean;
-                    return isStaff ? (
-                        <span className="flex items-center gap-1 text-xs font-bold text-red-500 bg-red-500/10 px-2 py-1 rounded w-fit border border-red-500/20">
-                            <ShieldAlert size={12} /> Admin
-                        </span>
-                    ) : (
-                        <span className="text-xs font-bold text-gray-400 bg-gray-800 px-2 py-1 rounded w-fit">
-                            Customer
-                        </span>
-                    );
-                },
+                accessorFn: row => row.shop?.name || 'N/A',
+                id: 'shop',
+                header: 'Shop',
             },
             {
-                accessorKey: 'is_active',
+                accessorKey: 'price_per_day',
+                header: 'Price/Day',
+                cell: info => <span className="font-medium text-white">₹{info.getValue() as number}</span>,
+            },
+            {
+                accessorKey: 'is_available',
                 header: 'Status',
                 cell: info => {
-                    const isActive = info.getValue() as boolean;
-                    return isActive ? (
+                    const isAvailable = info.getValue() as boolean;
+                    return isAvailable ? (
                         <span className="flex items-center gap-1 text-xs font-bold text-green-400">
-                            <CheckCircle2 size={14} /> Active
+                            <CheckCircle2 size={14} /> Available
                         </span>
                     ) : (
                         <span className="flex items-center gap-1 text-xs font-bold text-red-400">
-                            <XCircle size={14} /> Banned
+                            <XCircle size={14} /> Rented / Hidden
                         </span>
                     );
                 },
             },
             {
-                accessorKey: 'date_joined',
-                header: 'Joined',
+                accessorKey: 'created_at',
+                header: 'Listed On',
                 cell: info => {
                     const dateStr = info.getValue() as string;
                     if (!dateStr) return 'N/A';
@@ -114,8 +114,8 @@ export default function AdminUsersPage() {
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
             <div>
-                <h2 className="text-3xl font-bold mb-2 text-white">User Management</h2>
-                <p className="text-gray-400">View and manage all registered accounts on the platform.</p>
+                <h2 className="text-3xl font-bold mb-2 text-white">Listings Management</h2>
+                <p className="text-gray-400">View and manage all active and inactive items listed for rent.</p>
             </div>
 
             {loading ? (
@@ -123,7 +123,7 @@ export default function AdminUsersPage() {
                     <div className="w-8 h-8 border-4 border-red-500 border-t-transparent rounded-full animate-spin"></div>
                 </div>
             ) : (
-                <DataTable columns={columns} data={users} searchKey="name" />
+                <DataTable columns={columns} data={listings} searchKey="name" />
             )}
         </div>
     );

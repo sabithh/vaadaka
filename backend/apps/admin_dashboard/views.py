@@ -11,6 +11,7 @@ from apps.bookings.models import Booking
 from apps.users.serializers import UserProfileSerializer
 from apps.bookings.serializers import BookingSerializer
 from apps.subscriptions.models import Subscription
+from apps.vaadaka.serializers import VaadakaSerializer
 
 User = get_user_model()
 
@@ -147,3 +148,11 @@ class AdminBookingViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAuthenticated, IsSuperUser]
     filter_backends = [filters.SearchFilter]
     search_fields = ['id', 'vaadaka__name', 'renter__username', 'renter__email']
+
+
+class AdminVaadakaViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Vaadaka.objects.all().order_by('-created_at')
+    serializer_class = VaadakaSerializer
+    permission_classes = [permissions.IsAuthenticated, IsSuperUser]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['id', 'name', 'category__name', 'shop__name']
