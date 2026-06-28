@@ -84,10 +84,21 @@ class VaadakaViewSet(viewsets.ModelViewSet):
         # Any provider can create a vaadaka, but it will only be VISIBLE in the 
         # public listings if they have an active subscription (handled in get_queryset).
         
-        # Get user's first shop or require shop_id
-        shop = user.shops.first()
+        # Get user's personal shop or first shop
+        shop = user.shops.filter(is_personal=True).first() or user.shops.first()
         if not shop:
-            raise serializers.ValidationError({"shop": "You must create a shop first"})
+            # Auto-provision a personal store
+            shop = user.shops.create(
+                name=f"{user.username}'s Personal Store",
+                description="Auto-provisioned personal store for casual rentals",
+                address="Home",
+                location_lat=user.location_lat or 0.0,
+                location_lng=user.location_lng or 0.0,
+                phone=user.phone or "N/A",
+                email=user.email,
+                is_personal=True,
+                is_active=True
+            )
             
         # Handle image upload
         # Frontend sends 'image' (single file), Model expects 'images' (list of URLs)

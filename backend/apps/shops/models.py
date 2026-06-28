@@ -60,8 +60,8 @@ class Shop(models.Model):
     )
     subscription_expires_at = models.DateTimeField(null=True, blank=True)
     
-    # Status
     is_active = models.BooleanField(default=True)
+    is_personal = models.BooleanField(default=False, help_text="True if this is an auto-provisioned personal store")
     
     # Images (JSON array of URLs)
     images = models.JSONField(
