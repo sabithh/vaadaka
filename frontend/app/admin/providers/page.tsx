@@ -46,7 +46,7 @@ export default function AdminProvidersFinancePage() {
                 accessorKey: 'name',
                 header: 'Provider',
                 cell: info => (
-                    <div className="flex flex-col">
+                    <div className="flex flex-col" aria-label="page-container">
                         <span className="font-medium text-white">{info.getValue() as string}</span>
                         <span className="text-xs text-gray-500">{info.row.original.email}</span>
                     </div>

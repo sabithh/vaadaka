@@ -144,10 +144,10 @@ export default function RegisterPage() {
                     {/* ROLE SELECTION (Step 1) */}
                     {!selectedRole ? (
                         <div>
-                            <h1 className="font-black uppercase tracking-tighter mb-2"
+                            <h2 className="font-black uppercase tracking-tighter mb-2"
                                 style={{ fontFamily: 'var(--font-bebas), sans-serif', fontSize: '2.5rem', color: 'var(--text-primary)', lineHeight: 1 }}>
                                 How will you use Vaadaka?
-                            </h1>
+                            </h2>
                             <p className="text-sm mb-10" style={{ color: 'var(--text-muted)' }}>Pick one to get started — you can always change later.</p>
 
                             <div className="grid sm:grid-cols-2 gap-4">
@@ -228,10 +228,10 @@ export default function RegisterPage() {
                                     ← Back
                                 </button>
                             </div>
-                            <h1 className="font-black uppercase tracking-tighter mb-1"
+                            <h2 className="font-black uppercase tracking-tighter mb-1"
                                 style={{ fontFamily: 'var(--font-bebas), sans-serif', fontSize: '2.2rem', color: 'var(--text-primary)', lineHeight: 1 }}>
                                 {selectedRole === 'renter' ? 'Renter Registration' : 'Owner Registration'}
-                            </h1>
+                            </h2>
                             <div className="flex items-center gap-2 mb-8">
                                 {selectedRole === 'renter'
                                     ? <><ShoppingBag size={14} style={{ color: 'var(--highlight)' }} /><span className="text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Renter Account</span></>

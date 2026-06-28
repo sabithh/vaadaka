@@ -95,7 +95,7 @@ export default function DashboardPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen pt-24 pb-12" style={{ background: 'var(--bg-primary)' }}>
+            <div className="min-h-screen pt-24 pb-12" style={{ background: 'var(--bg-primary)' }} aria-label="page-container">
                 <div className="container-custom">
                     <div className="mb-10">
                         <Skeleton className="w-64 h-12 mb-2" style={{ background: 'var(--bg-surface-2)' }} />

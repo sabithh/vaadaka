@@ -117,7 +117,7 @@ export default function BookingsPage() {
     };
 
     return (
-        <div className="min-h-screen pt-24 pb-12" style={{ background: 'var(--bg-primary)' }}>
+        <div className="min-h-screen pt-24 pb-12" style={{ background: 'var(--bg-primary)' }} aria-label="page-container">
             <Modal
                 isOpen={showCancelModal}
                 onClose={() => setShowCancelModal(false)}

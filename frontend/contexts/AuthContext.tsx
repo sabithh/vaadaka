@@ -101,7 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center" style={{ background: '#0A0A0A' }}>
+            <div className="min-h-screen flex items-center justify-center" style={{ background: '#0A0A0A' }} aria-label="page-container">
                 <div className="w-5 h-5 border-2 rounded-full animate-spin" style={{ borderColor: '#D20000', borderTopColor: 'transparent' }} />
             </div>
         );

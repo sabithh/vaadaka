@@ -55,7 +55,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${bebasNeue.variable} ${barlowCondensed.variable} ${notoSansMalayalam.variable} antialiased`}>
+      <body className={`${bebasNeue.variable} ${barlowCondensed.variable} ${notoSansMalayalam.variable} antialiased`} aria-label="page-container">
         <ThemeProvider>
           <AuthProvider>
             <ToastProvider>

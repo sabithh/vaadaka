@@ -6,7 +6,7 @@ import ScrollReveal from '@/components/ui/ScrollReveal';
 
 export default function Home() {
   return (
-    <div className="min-h-screen relative overflow-hidden pt-20">
+    <div className="min-h-screen relative overflow-hidden pt-20" aria-label="page-container">
       {/* Hero Section */}
       <section className="relative z-10 min-h-screen flex items-center justify-center px-4 py-20">
         <div className="container-custom">

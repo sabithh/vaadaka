@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
+import NextLink from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -114,16 +114,16 @@ export default function Navbar() {
                     <div className="max-w-[1440px] mx-auto px-4 md:px-6 py-3">
                         <div className="flex items-center justify-between">
                             {/* Logo */}
-                            <Link
+                            <NextLink
                                 href={isAuthenticated ? (user?.is_superuser ? '/admin' : user?.user_type === 'provider' ? '/dashboard' : '/vaadakas') : '/'}
                                 className="flex items-center group no-underline"
                             >
                                 <VaadakaLogo />
-                            </Link>
+                            </NextLink>
 
                             {/* Desktop Nav Links */}
                             <div className="hidden md:flex items-center gap-3">
-                                <Link
+                                <NextLink
                                     href="/vaadakas"
                                     className="flex items-center gap-2 px-5 py-2 text-sm font-bold uppercase tracking-wider transition-all duration-200 no-underline"
                                     style={navLinkStyle}
@@ -132,13 +132,13 @@ export default function Navbar() {
                                 >
                                     <Search size={16} />
                                     <span>Browse</span>
-                                </Link>
+                                </NextLink>
 
                                 {isAuthenticated ? (
                                     <>
                                         {!user?.is_superuser && (
                                             <>
-                                                <Link
+                                                <NextLink
                                                     href="/bookings"
                                                     className="flex items-center gap-2 px-5 py-2 text-sm font-bold uppercase tracking-wider transition-all duration-200 no-underline"
                                                     style={navLinkStyle}
@@ -147,8 +147,8 @@ export default function Navbar() {
                                                 >
                                                     <Calendar size={16} />
                                                     <span>Rentals</span>
-                                                </Link>
-                                                <Link
+                                                </NextLink>
+                                                <NextLink
                                                     href="/chats"
                                                     className="flex items-center gap-2 px-5 py-2 text-sm font-bold uppercase tracking-wider transition-all duration-200 no-underline"
                                                     style={navLinkStyle}
@@ -157,12 +157,12 @@ export default function Navbar() {
                                                 >
                                                     <MessageCircle size={16} />
                                                     <span>Chats</span>
-                                                </Link>
+                                                </NextLink>
                                             </>
                                         )}
 
                                         {user?.is_superuser ? (
-                                            <Link
+                                            <NextLink
                                                 href="/admin"
                                                 className="flex items-center gap-2 px-5 py-2 text-sm font-bold uppercase tracking-wider transition-all duration-200 no-underline"
                                                 style={navLinkStyle}
@@ -171,10 +171,10 @@ export default function Navbar() {
                                             >
                                                 <LayoutDashboard size={16} />
                                                 <span>Admin</span>
-                                            </Link>
+                                            </NextLink>
                                         ) : user?.user_type === 'provider' && (
                                             <>
-                                                <Link
+                                                <NextLink
                                                     href="/vaadakas/new"
                                                     className="flex items-center gap-2 px-5 py-2 text-sm font-bold uppercase tracking-wider transition-all duration-200 no-underline"
                                                     style={{ background: '#D20000', color: 'white', borderRadius: 6, border: '1px solid #D20000' }}
@@ -183,8 +183,8 @@ export default function Navbar() {
                                                 >
                                                     <Plus size={16} />
                                                     <span>List Item</span>
-                                                </Link>
-                                                <Link
+                                                </NextLink>
+                                                <NextLink
                                                     href="/dashboard"
                                                     className="flex items-center gap-2 px-5 py-2 text-sm font-bold uppercase tracking-wider transition-all duration-200 no-underline"
                                                     style={navLinkStyle}
@@ -193,7 +193,7 @@ export default function Navbar() {
                                                 >
                                                     <LayoutDashboard size={16} />
                                                     <span>Dashboard</span>
-                                                </Link>
+                                                </NextLink>
                                             </>
                                         )}
 
@@ -215,7 +215,7 @@ export default function Navbar() {
                                     </>
                                 ) : (
                                     <>
-                                        <Link
+                                        <NextLink
                                             href="/login"
                                             className="flex items-center gap-2 px-5 py-2 text-sm font-bold uppercase tracking-wider transition-all duration-200 no-underline"
                                             style={{ color: 'var(--text-muted)' }}
@@ -224,8 +224,8 @@ export default function Navbar() {
                                         >
                                             <LogIn size={16} />
                                             <span>Login</span>
-                                        </Link>
-                                        <Link
+                                        </NextLink>
+                                        <NextLink
                                             href="/register"
                                             className="flex items-center gap-2 px-5 py-2 text-sm font-bold uppercase tracking-wider transition-all duration-200 no-underline"
                                             style={{ background: '#D20000', color: 'white', borderRadius: 6, border: '1px solid #D20000' }}
@@ -234,7 +234,7 @@ export default function Navbar() {
                                         >
                                             <UserPlus size={16} />
                                             <span>Join Now</span>
-                                        </Link>
+                                        </NextLink>
                                     </>
                                 )}
 
@@ -258,29 +258,29 @@ export default function Navbar() {
                         {/* Mobile dropdown menu */}
                         {isMobileMenuOpen && (
                             <div className="md:hidden pt-4 pb-2 space-y-2" style={{ borderTop: '1px solid var(--border)', marginTop: '0.75rem' }}>
-                                <Link href="/vaadakas" className="flex items-center gap-3 px-3 py-3 text-sm font-bold uppercase tracking-wider no-underline" style={{ color: 'var(--text-primary)' }} onClick={() => setIsMobileMenuOpen(false)}>
+                                <NextLink href="/vaadakas" className="flex items-center gap-3 px-3 py-3 text-sm font-bold uppercase tracking-wider no-underline" style={{ color: 'var(--text-primary)' }} onClick={() => setIsMobileMenuOpen(false)}>
                                     <Search size={16} style={{ color: '#D20000' }} /> Browse
-                                </Link>
+                                </NextLink>
                                 {isAuthenticated ? (
                                     <>
                                         {!user?.is_superuser && (
                                             <>
-                                                <Link href="/bookings" className="flex items-center gap-3 px-3 py-3 text-sm font-bold uppercase tracking-wider no-underline" style={{ color: 'var(--text-primary)' }} onClick={() => setIsMobileMenuOpen(false)}>
+                                                <NextLink href="/bookings" className="flex items-center gap-3 px-3 py-3 text-sm font-bold uppercase tracking-wider no-underline" style={{ color: 'var(--text-primary)' }} onClick={() => setIsMobileMenuOpen(false)}>
                                                     <Calendar size={16} style={{ color: '#D20000' }} /> My Rentals
-                                                </Link>
-                                                <Link href="/chats" className="flex items-center gap-3 px-3 py-3 text-sm font-bold uppercase tracking-wider no-underline" style={{ color: 'var(--text-primary)' }} onClick={() => setIsMobileMenuOpen(false)}>
+                                                </NextLink>
+                                                <NextLink href="/chats" className="flex items-center gap-3 px-3 py-3 text-sm font-bold uppercase tracking-wider no-underline" style={{ color: 'var(--text-primary)' }} onClick={() => setIsMobileMenuOpen(false)}>
                                                     <MessageCircle size={16} style={{ color: '#D20000' }} /> Chats
-                                                </Link>
+                                                </NextLink>
                                             </>
                                         )}
                                         {user?.user_type === 'provider' && (
                                             <>
-                                                <Link href="/vaadakas/new" className="flex items-center gap-3 px-3 py-3 text-sm font-bold uppercase tracking-wider no-underline" style={{ color: '#D20000' }} onClick={() => setIsMobileMenuOpen(false)}>
+                                                <NextLink href="/vaadakas/new" className="flex items-center gap-3 px-3 py-3 text-sm font-bold uppercase tracking-wider no-underline" style={{ color: '#D20000' }} onClick={() => setIsMobileMenuOpen(false)}>
                                                     <Plus size={16} /> List Item
-                                                </Link>
-                                                <Link href="/dashboard" className="flex items-center gap-3 px-3 py-3 text-sm font-bold uppercase tracking-wider no-underline" style={{ color: 'var(--text-primary)' }} onClick={() => setIsMobileMenuOpen(false)}>
+                                                </NextLink>
+                                                <NextLink href="/dashboard" className="flex items-center gap-3 px-3 py-3 text-sm font-bold uppercase tracking-wider no-underline" style={{ color: 'var(--text-primary)' }} onClick={() => setIsMobileMenuOpen(false)}>
                                                     <LayoutDashboard size={16} style={{ color: '#D20000' }} /> Dashboard
-                                                </Link>
+                                                </NextLink>
                                             </>
                                         )}
                                         <button onClick={() => { setIsLogoutModalOpen(true); setIsMobileMenuOpen(false); }} className="flex items-center gap-3 px-3 py-3 text-sm font-bold uppercase tracking-wider w-full text-left cursor-pointer" style={{ color: 'var(--text-primary)' }}>
@@ -289,12 +289,12 @@ export default function Navbar() {
                                     </>
                                 ) : (
                                     <>
-                                        <Link href="/login" className="flex items-center gap-3 px-3 py-3 text-sm font-bold uppercase tracking-wider no-underline" style={{ color: 'var(--text-primary)' }} onClick={() => setIsMobileMenuOpen(false)}>
+                                        <NextLink href="/login" className="flex items-center gap-3 px-3 py-3 text-sm font-bold uppercase tracking-wider no-underline" style={{ color: 'var(--text-primary)' }} onClick={() => setIsMobileMenuOpen(false)}>
                                             <LogIn size={16} style={{ color: '#D20000' }} /> Login
-                                        </Link>
-                                        <Link href="/register" className="flex items-center gap-3 px-3 py-3 text-sm font-bold uppercase tracking-wider no-underline" style={{ color: '#D20000' }} onClick={() => setIsMobileMenuOpen(false)}>
+                                        </NextLink>
+                                        <NextLink href="/register" className="flex items-center gap-3 px-3 py-3 text-sm font-bold uppercase tracking-wider no-underline" style={{ color: '#D20000' }} onClick={() => setIsMobileMenuOpen(false)}>
                                             <UserPlus size={16} /> Join Now
-                                        </Link>
+                                        </NextLink>
                                     </>
                                 )}
                             </div>

@@ -36,6 +36,7 @@ export default function TiltCard({ children, className = '' }: TiltCardProps) {
 
     return (
         <motion.div
+            aria-label="tilt-card"
             style={{
                 rotateX,
                 rotateY,

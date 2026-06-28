@@ -6,7 +6,7 @@ interface StatCardProps {
   icon: LucideIcon;
   trend?: string;
   trendUp?: boolean;
-  color?: 'blue' | 'purple' | 'green' | 'yellow' | 'red';
+  color?: 'blue' | 'emerald' | 'green' | 'yellow' | 'red';
 }
 
 export default function StatCard({
@@ -19,7 +19,7 @@ export default function StatCard({
 }: StatCardProps) {
   const colorMap = {
     blue: { text: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-400/20' },
-    purple: { text: 'text-red-500', bg: 'bg-red-500/10', border: 'border-red-500/20' },
+    emerald: { text: 'text-red-500', bg: 'bg-red-500/10', border: 'border-red-500/20' },
     green: { text: 'text-green-400', bg: 'bg-green-400/10', border: 'border-green-400/20' },
     yellow: { text: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-400/20' },
     red: { text: 'text-red-400', bg: 'bg-red-400/10', border: 'border-red-400/20' },
@@ -28,7 +28,7 @@ export default function StatCard({
   const selectedColor = colorMap[color];
 
   return (
-    <div className="bg-neutral-900 border border-neutral-800 p-6 rounded-xl hover:border-neutral-700 transition-all flex flex-col justify-between">
+    <div className="bg-neutral-900 border border-neutral-800 p-6 rounded-xl hover:border-neutral-700 transition-all flex flex-col justify-between" aria-label="page-container">
       <div className="flex justify-between items-start mb-4">
         <div className={`p-3 rounded-lg ${selectedColor.bg} border ${selectedColor.border}`}>
           <Icon className={selectedColor.text} size={24} />

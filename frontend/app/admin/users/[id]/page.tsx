@@ -113,7 +113,7 @@ export default function UserDetailsPage() {
                     {/* Avatar */}
                     <div className="flex-shrink-0">
                         {user.profile_image ? (
-                            <img src={user.profile_image} alt="" className="w-20 h-20 rounded-full object-cover border-4 border-neutral-700" />
+                            <img src={user.profile_image} alt={`${user.first_name}'s profile picture`} className="w-20 h-20 rounded-full object-cover border-4 border-neutral-700" />
                         ) : (
                             <div className="w-20 h-20 rounded-full bg-[#DC2626]/20 border-2 border-[#DC2626]/40 flex items-center justify-center text-3xl font-black text-[#DC2626]">
                                 {user.username?.[0]?.toUpperCase()}

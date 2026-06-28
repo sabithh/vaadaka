@@ -30,7 +30,7 @@ export default function AdminDashboard() {
     };
 
     if (loading) return (
-        <div className="flex items-center justify-center h-[70vh]">
+        <div className="flex items-center justify-center h-[70vh]" aria-label="page-container">
             <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
         </div>
     );
@@ -75,7 +75,7 @@ export default function AdminDashboard() {
                     title="Active Listings" 
                     value={stats?.total_vaadakas || 0} 
                     icon={Box} 
-                    color="purple" 
+                    color="emerald" 
                     trend="Ready to rent" 
                     trendUp={false}
                 />
