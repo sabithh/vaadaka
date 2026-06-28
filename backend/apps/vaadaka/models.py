@@ -95,9 +95,25 @@ class Vaadaka(models.Model):
     price_per_day = models.DecimalField(
         max_digits=10,
         decimal_places=2,
+        null=True,
+        blank=True,
         validators=[MinValueValidator(0.01)]
     )
     price_per_week = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0.01)]
+    )
+    price_per_month = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0.01)]
+    )
+    price_per_year = models.DecimalField(
         max_digits=10,
         decimal_places=2,
         null=True,

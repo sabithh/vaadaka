@@ -30,6 +30,7 @@ class VaadakaSerializer(serializers.ModelSerializer):
             'brand', 'model_number', 'condition', 'images',
             'quantity_available', 'quantity_total',
             'price_per_hour', 'price_per_day', 'price_per_week',
+            'price_per_month', 'price_per_year',
             'minimum_rental_duration', 'deposit_amount',
             'specifications', 'is_available',
             'created_at', 'updated_at', 'in_stock'
@@ -46,9 +47,23 @@ class VaadakaCreateSerializer(serializers.ModelSerializer):
             'category', 'name', 'description', 'brand', 'model_number',
             'condition', 'images', 'quantity_total', 'quantity_available',
             'price_per_hour', 'price_per_day', 'price_per_week',
+            'price_per_month', 'price_per_year',
             'minimum_rental_duration', 'deposit_amount',
             'specifications', 'is_available'
         ]
+        
+    def validate(self, data):
+        hour = data.get('price_per_hour')
+        day = data.get('price_per_day')
+        week = data.get('price_per_week')
+        month = data.get('price_per_month')
+        year = data.get('price_per_year')
+        
+        if not any([hour, day, week, month, year]):
+            raise serializers.ValidationError(
+                "You must provide at least one pricing tier (hourly, daily, weekly, monthly, or yearly)."
+            )
+        return data
 
 
 class ReviewSerializer(serializers.ModelSerializer):

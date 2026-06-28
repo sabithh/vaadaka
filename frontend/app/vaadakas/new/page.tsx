@@ -22,6 +22,8 @@ export default function AddVaadakaPage() {
         name: '',
         description: '',
         price_per_day: '',
+        price_per_month: '',
+        price_per_year: '',
         deposit_amount: '',
         quantity_available: '1',
         category_id: '',
@@ -72,11 +74,19 @@ export default function AddVaadakaPage() {
         setSubmitting(true);
 
         try {
+            if (!formData.price_per_day && !formData.price_per_month && !formData.price_per_year) {
+                showToast('Please provide at least one pricing rate (Daily, Monthly, or Yearly)', 'error');
+                setSubmitting(false);
+                return;
+            }
+
             // Create FormData for multipart upload
             const data = new FormData();
             data.append('name', formData.name);
             data.append('description', formData.description);
-            data.append('price_per_day', formData.price_per_day);
+            if (formData.price_per_day) data.append('price_per_day', formData.price_per_day);
+            if (formData.price_per_month) data.append('price_per_month', formData.price_per_month);
+            if (formData.price_per_year) data.append('price_per_year', formData.price_per_year);
             data.append('deposit_amount', formData.deposit_amount);
             data.append('quantity_available', formData.quantity_available);
             data.append('is_available', 'true'); // Explicitly set to available
@@ -168,11 +178,38 @@ export default function AddVaadakaPage() {
                                     <input
                                         type="number"
                                         name="price_per_day"
-                                        required
                                         min="0"
                                         className="w-full p-4 font-bold font-mono outline-none transition-colors" style={{ background: 'var(--bg-surface-2)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--text-primary)' }} onFocus={e => (e.target as HTMLElement).style.borderColor='#D20000'} onBlur={e => (e.target as HTMLElement).style.borderColor='var(--border)'}
                                         placeholder="0.00"
                                         value={formData.price_per_day}
+                                        onChange={handleChange}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold uppercase tracking-widest flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
+                                        Monthly Rent
+                                    </label>
+                                    <input
+                                        type="number"
+                                        name="price_per_month"
+                                        min="0"
+                                        className="w-full p-4 font-bold font-mono outline-none transition-colors" style={{ background: 'var(--bg-surface-2)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--text-primary)' }} onFocus={e => (e.target as HTMLElement).style.borderColor='#D20000'} onBlur={e => (e.target as HTMLElement).style.borderColor='var(--border)'}
+                                        placeholder="0.00"
+                                        value={formData.price_per_month}
+                                        onChange={handleChange}
+                                    />
+                                </div>
+                                <div className="space-y-2 col-span-2 md:col-span-1">
+                                    <label className="text-xs font-bold uppercase tracking-widest flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
+                                        Yearly Rent
+                                    </label>
+                                    <input
+                                        type="number"
+                                        name="price_per_year"
+                                        min="0"
+                                        className="w-full p-4 font-bold font-mono outline-none transition-colors" style={{ background: 'var(--bg-surface-2)', border: '1px solid var(--border)', borderRadius: 6, color: 'var(--text-primary)' }} onFocus={e => (e.target as HTMLElement).style.borderColor='#D20000'} onBlur={e => (e.target as HTMLElement).style.borderColor='var(--border)'}
+                                        placeholder="0.00"
+                                        value={formData.price_per_year}
                                         onChange={handleChange}
                                     />
                                 </div>
@@ -309,10 +346,10 @@ export default function AddVaadakaPage() {
 
                                             <div className="border-t border-white/10 pt-4 flex items-end justify-between">
                                                 <div className="text-3xl font-black text-white leading-none">
-                                                    ₹{Number(formData.price_per_day || 0).toFixed(2)}
+                                                    ₹{Number(formData.price_per_month || formData.price_per_day || formData.price_per_year || 0).toFixed(2)}
                                                 </div>
                                                 <div className="text-xs font-mono text-gray-500 uppercase pb-1">
-                                                    /DAY
+                                                    /{formData.price_per_month ? 'MONTH' : formData.price_per_year ? 'YEAR' : 'DAY'}
                                                 </div>
                                             </div>
                                         </div>
