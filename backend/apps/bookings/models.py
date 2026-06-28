@@ -4,6 +4,7 @@ from django.db import models
 from django.core.validators import MinValueValidator
 from apps.vaadaka.models import Vaadaka
 from apps.shops.models import Shop
+from decimal import Decimal
 
 
 class Booking(models.Model):
@@ -72,6 +73,12 @@ class Booking(models.Model):
         decimal_places=2,
         validators=[MinValueValidator(0.00)]
     )
+    platform_fee = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0.00,
+        validators=[MinValueValidator(0.00)]
+    )
     
     # Status
     status = models.CharField(
@@ -127,7 +134,11 @@ class Booking(models.Model):
             
             # rental_price is per-unit; multiply by quantity, then add deposit
             quantity = self.quantity or 1
-            self.total_amount = (self.rental_price * quantity) + self.deposit_amount
+            rental_total = self.rental_price * quantity
+            self.total_amount = rental_total + self.deposit_amount
+            
+            # Platform fee is 3% of rental total
+            self.platform_fee = rental_total * Decimal('0.03')
         
         super().save(*args, **kwargs)
 
