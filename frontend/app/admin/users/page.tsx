@@ -14,6 +14,7 @@ type User = {
   email: string;
   is_active: boolean;
   is_staff: boolean;
+  is_superuser: boolean;
   date_joined: string;
 };
 
@@ -46,6 +47,18 @@ const UserActionsCell = ({ user, onActionSuccess }: { user: User, onActionSucces
         }
     };
 
+    const toggleStaff = async () => {
+        try {
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/users/${user.id}/toggle_staff/`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${accessToken}` }
+            });
+            onActionSuccess();
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
     return (
         <div className="relative">
             <button onClick={() => setIsOpen(!isOpen)} className="p-2 hover:bg-neutral-800 rounded transition-colors text-gray-400 hover:text-white">
@@ -58,7 +71,12 @@ const UserActionsCell = ({ user, onActionSuccess }: { user: User, onActionSucces
                         <button onClick={() => { toggleActive(); setIsOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-gray-200 hover:bg-neutral-700">
                             {user.is_active ? 'Ban User' : 'Unban User'}
                         </button>
-                        {!user.is_staff && (
+                        {!user.is_superuser && (
+                            <button onClick={() => { toggleStaff(); setIsOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-gray-200 hover:bg-neutral-700">
+                                {user.is_staff ? 'Remove Admin' : 'Make Admin'}
+                            </button>
+                        )}
+                        {!user.is_staff && !user.is_superuser && (
                             <button onClick={() => { deleteUser(); setIsOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500/10">
                                 Delete
                             </button>

@@ -141,6 +141,15 @@ class AdminUserViewSet(viewsets.ModelViewSet):
         user.save(update_fields=['is_active'])
         return Response({'status': 'ok', 'is_active': user.is_active})
 
+    @action(detail=True, methods=['post'])
+    def toggle_staff(self, request, pk=None):
+        user = self.get_object()
+        if user.is_superuser:
+            return Response({'error': 'Cannot change role of a superuser.'}, status=status.HTTP_403_FORBIDDEN)
+        user.is_staff = not user.is_staff
+        user.save(update_fields=['is_staff'])
+        return Response({'status': 'ok', 'is_staff': user.is_staff})
+
 
 class AdminBookingViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Booking.objects.all().order_by('-created_at')
