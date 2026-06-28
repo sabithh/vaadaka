@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { DataTable } from '@/components/admin/DataTable';
@@ -17,6 +17,59 @@ type User = {
   date_joined: string;
 };
 
+const UserActionsCell = ({ user, onActionSuccess }: { user: User, onActionSuccess: () => void }) => {
+    const { accessToken } = useAuth();
+    const [isOpen, setIsOpen] = useState(false);
+
+    const toggleActive = async () => {
+        try {
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/users/${user.id}/toggle_active/`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${accessToken}` }
+            });
+            onActionSuccess();
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const deleteUser = async () => {
+        if (!confirm('Are you sure you want to permanently delete this user?')) return;
+        try {
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/users/${user.id}/`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${accessToken}` }
+            });
+            onActionSuccess();
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    return (
+        <div className="relative">
+            <button onClick={() => setIsOpen(!isOpen)} className="p-2 hover:bg-neutral-800 rounded transition-colors text-gray-400 hover:text-white">
+                <MoreHorizontal size={16} />
+            </button>
+            {isOpen && (
+                <>
+                    <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)}></div>
+                    <div className="absolute right-0 mt-2 w-32 bg-neutral-800 rounded-lg shadow-xl border border-neutral-700 z-50 overflow-hidden">
+                        <button onClick={() => { toggleActive(); setIsOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-gray-200 hover:bg-neutral-700">
+                            {user.is_active ? 'Ban User' : 'Unban User'}
+                        </button>
+                        {!user.is_staff && (
+                            <button onClick={() => { deleteUser(); setIsOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500/10">
+                                Delete
+                            </button>
+                        )}
+                    </div>
+                </>
+            )}
+        </div>
+    );
+};
+
 export default function AdminUsersPage() {
     const { accessToken } = useAuth();
     const [users, setUsers] = useState<User[]>([]);
@@ -26,7 +79,7 @@ export default function AdminUsersPage() {
         if (accessToken) loadUsers();
     }, [accessToken]);
 
-    const loadUsers = async () => {
+    const loadUsers = useCallback(async () => {
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/users/`, {
                 headers: { 'Authorization': `Bearer ${accessToken}` }
@@ -38,7 +91,7 @@ export default function AdminUsersPage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [accessToken]);
 
     const columns = useMemo<ColumnDef<User>[]>(
         () => [
@@ -101,14 +154,10 @@ export default function AdminUsersPage() {
             },
             {
                 id: 'actions',
-                cell: () => (
-                    <button className="p-2 hover:bg-neutral-800 rounded transition-colors text-gray-400 hover:text-white">
-                        <MoreHorizontal size={16} />
-                    </button>
-                ),
+                cell: ({ row }) => <UserActionsCell user={row.original} onActionSuccess={loadUsers} />,
             },
         ],
-        []
+        [loadUsers]
     );
 
     return (
