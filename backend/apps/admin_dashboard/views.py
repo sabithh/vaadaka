@@ -165,3 +165,50 @@ class AdminVaadakaViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAuthenticated, IsSuperUser]
     filter_backends = [filters.SearchFilter]
     search_fields = ['id', 'name', 'category__name', 'shop__name']
+
+
+class AdminProviderFinanceViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [permissions.IsAuthenticated, IsSuperUser]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['username', 'email', 'first_name', 'last_name']
+
+    def get_queryset(self):
+        return User.objects.filter(user_type='provider').order_by('-date_joined')
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            data = self._get_finance_data(page)
+            return self.get_paginated_response(data)
+        
+        data = self._get_finance_data(queryset)
+        return Response(data)
+
+    def _get_finance_data(self, users):
+        results = []
+        for user in users:
+            shops = user.shops.all()
+            shop_ids = [shop.id for shop in shops]
+            
+            bookings = Booking.objects.filter(shop_id__in=shop_ids, payment_status='paid')
+            total_revenue = bookings.aggregate(total=Sum('total_amount'))['total'] or 0
+            
+            # Combine subscription amounts if available
+            platform_fees = 0
+            try:
+                subs = Subscription.objects.filter(user=user, status__in=['active', 'expired'])
+                platform_fees = subs.aggregate(total=Sum('amount'))['total'] or 0
+            except Exception:
+                pass
+
+            results.append({
+                'id': user.id,
+                'name': f"{user.first_name} {user.last_name}".strip() or user.username,
+                'email': user.email,
+                'total_shops': len(shop_ids),
+                'total_bookings_handled': bookings.count(),
+                'provider_revenue': float(total_revenue),
+                'platform_fees_paid': float(platform_fees)
+            })
+        return results
