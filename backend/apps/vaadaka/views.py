@@ -11,6 +11,8 @@ from .serializers import (
     VaadakaSerializer, VaadakaCreateSerializer, VaadakaCategorySerializer, ReviewSerializer
 )
 from .filters import VaadakaFilter
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 import math  # Must be top-level — used in nearby() before any local import
 
 
@@ -69,6 +71,11 @@ class VaadakaViewSet(viewsets.ModelViewSet):
         except Exception as e:
             # Fallback for migrations or db issues
             return Vaadaka.objects.none()
+
+    @method_decorator(cache_page(60 * 15))
+    def list(self, request, *args, **kwargs):
+        """Get list of vaadakas (Cached for 15 minutes)"""
+        return super().list(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         """Validate user has a shop and active subscription before creating vaadaka"""
