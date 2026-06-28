@@ -219,7 +219,7 @@ export default function DashboardPage() {
                             </Link>
                         </div>
 
-                        {myTools.length === 0 ? (
+                        {myVaadakas.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-16 text-center"
                                 style={{ background: 'var(--bg-surface)', border: '2px dashed #1E1E1E', borderRadius: 8 }}>
                                 <Package size={36} className="mb-3" style={{ color: '#333333' }} />
