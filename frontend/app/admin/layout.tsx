@@ -28,7 +28,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 {/* Sidebar */}
                 <aside className="w-64 bg-black border-r border-neutral-800 fixed h-full z-10 hidden md:flex flex-col">
                     <div className="p-6 border-b border-neutral-800">
-                        <h1 className="text-2xl font-primary bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600 font-bold">
+                        <h1 className="text-2xl font-primary bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-red-700 font-bold">
                             VAADAKA ADMIN
                         </h1>
                     </div>
@@ -43,7 +43,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                     key={item.href}
                                     href={item.href}
                                     className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 ${isActive
-                                        ? 'bg-blue-600/20 text-blue-400 border border-blue-600/50'
+                                        ? 'bg-red-600/20 text-red-500 border border-red-600/50'
                                         : 'text-gray-400 hover:bg-white/5 hover:text-white'
                                         }`}
                                 >
