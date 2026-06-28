@@ -15,7 +15,7 @@ class ShopSerializer(serializers.ModelSerializer):
             'id', 'owner', 'name', 'description', 'address',
             'location_lat', 'location_lng', 'phone', 'email',
             'business_hours', 'rating_average', 'total_ratings',
-            'is_active', 'images', 'created_at', 'updated_at',
+            'is_active', 'is_personal', 'images', 'created_at', 'updated_at',
             'distance'
         ]
         read_only_fields = [
@@ -60,7 +60,7 @@ class ShopDetailSerializer(serializers.ModelSerializer):
             'location_lat', 'location_lng', 'phone', 'email',
             'business_hours', 'rating_average', 'total_ratings',
             'subscription_tier', 'subscription_expires_at',
-            'is_active', 'images', 'created_at', 'updated_at',
+            'is_active', 'is_personal', 'images', 'created_at', 'updated_at',
             'tools_count', 'reviews_count'
         ]
     

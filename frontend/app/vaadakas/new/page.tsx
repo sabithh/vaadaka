@@ -51,10 +51,8 @@ export default function AddVaadakaPage() {
             router.push('/login');
         } else if (isRenter) {
             router.push('/vaadakas');
-        } else if (!hasShop && user?.user_type === 'provider') {
-            router.push('/shops/new');
         }
-    }, [isAuthenticated, isRenter, router, hasShop, user]);
+    }, [isAuthenticated, isRenter, router, user]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;

@@ -38,8 +38,7 @@ export default function DashboardPage() {
         if (!loading && !isAuthenticated) router.push('/login');
         else if (!loading && user?.is_superuser) router.push('/admin');
         else if (!loading && isRenter) router.push('/bookings');
-        else if (!loading && !hasShop && user?.user_type === 'provider') router.push('/shops/new');
-    }, [isAuthenticated, isRenter, loading, router, hasShop, user]);
+    }, [isAuthenticated, isRenter, loading, router, user]);
 
     useEffect(() => {
         if (isAuthenticated && accessToken && !isRenter) loadDashboardData();

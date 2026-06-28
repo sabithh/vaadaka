@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import 'leaflet/dist/leaflet.css';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
 import L from 'leaflet';
 import dynamic from 'next/dynamic';
 
@@ -21,9 +21,10 @@ interface LocationViewerProps {
     lat: number;
     lng: number;
     popupText?: string;
+    isPersonal?: boolean;
 }
 
-const LocationViewerHelper = ({ lat, lng, popupText }: LocationViewerProps) => {
+const LocationViewerHelper = ({ lat, lng, popupText, isPersonal }: LocationViewerProps) => {
 
     // Default center if 0,0 provided
     const position: [number, number] = (lat !== 0 && lng !== 0) ? [lat, lng] : [20.5937, 78.9629];
@@ -43,9 +44,15 @@ const LocationViewerHelper = ({ lat, lng, popupText }: LocationViewerProps) => {
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     className="map-tiles-dark"
                 />
-                <Marker position={position}>
-                    {popupText && <Popup>{popupText}</Popup>}
-                </Marker>
+                {isPersonal ? (
+                    <Circle center={position} radius={500} pathOptions={{ color: '#D20000', fillColor: '#D20000', fillOpacity: 0.2 }}>
+                        {popupText && <Popup>{popupText}</Popup>}
+                    </Circle>
+                ) : (
+                    <Marker position={position}>
+                        {popupText && <Popup>{popupText}</Popup>}
+                    </Marker>
+                )}
             </MapContainer>
 
             {/* Overlay Grid Line Effect */}
