@@ -82,6 +82,8 @@ export default function BrowsePage() {
             },
             () => { setIsNearbyLoading(false); alert('Please allow location access.'); }
         );
+    };
+
     const toggleCategory = (id: string) => {
         setIsNearbyActive(false); // Disable nearby when filtering
         setSelectedCategories(prev => 
