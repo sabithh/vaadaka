@@ -11,7 +11,9 @@ interface Vaadaka {
     id: string;
     name: string;
     description: string;
-    price_per_day: number;
+    price_per_day?: number;
+    price_per_month?: number;
+    price_per_year?: number;
     deposit_amount: number;
     quantity_available: number;
     shop: {
@@ -166,7 +168,7 @@ export default function BrowsePage() {
                                     border: `1px solid ${selectedCategories.length === 0 && !isNearbyActive ? 'var(--highlight)' : 'var(--border)'}`,
                                 }}
                             >
-                                All Items
+                                All
                             </button>
                             {categories.map(cat => (
                                 <button
@@ -265,9 +267,9 @@ export default function BrowsePage() {
                                         <div>
                                             <div className="flex items-baseline gap-1">
                                                 <span className="text-xl font-black" style={{ color: '#D20000', fontFamily: 'var(--font-bebas), sans-serif' }}>
-                                                    ₹{Number(vaadaka.price_per_day).toFixed(0)}
+                                                    ₹{Number(vaadaka.price_per_month || vaadaka.price_per_year || vaadaka.price_per_day || 0).toFixed(0)}
                                                 </span>
-                                                <span className="text-xs font-bold uppercase" style={{ color: 'var(--text-muted)' }}>/day</span>
+                                                <span className="text-xs font-bold uppercase" style={{ color: 'var(--text-muted)' }}>/{vaadaka.price_per_month ? 'month' : vaadaka.price_per_year ? 'year' : 'day'}</span>
                                             </div>
                                         </div>
                                         {vaadaka.category?.name && (

@@ -1,34 +1,38 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
-import { Search, Loader } from 'lucide-react';
+import { DataTable } from '@/components/admin/DataTable';
+import { ColumnDef } from '@tanstack/react-table';
+import { MoreHorizontal, CalendarClock, Clock, CheckCircle, XCircle } from 'lucide-react';
 
-export default function BookingsPage() {
+type Booking = {
+  id: string;
+  vaadaka: { name: string };
+  user: { first_name: string; last_name: string };
+  start_datetime: string;
+  end_datetime: string;
+  status: string;
+  total_price: string;
+};
+
+export default function AdminBookingsPage() {
     const { accessToken } = useAuth();
-    const [bookings, setBookings] = useState<any[]>([]);
+    const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
-    const [search, setSearch] = useState('');
-    const [debouncedSearch, setDebouncedSearch] = useState('');
-
-    // Debounce search — wait 400ms after user stops typing
-    useEffect(() => {
-        const timer = setTimeout(() => setDebouncedSearch(search), 400);
-        return () => clearTimeout(timer);
-    }, [search]);
 
     useEffect(() => {
-        if (accessToken) {
-            loadBookings();
-        }
-    }, [accessToken, debouncedSearch]);
+        if (accessToken) loadBookings();
+    }, [accessToken]);
 
     const loadBookings = async () => {
         try {
-            setLoading(true);
-            const data = await api.getAdminBookings(accessToken!, debouncedSearch);
-            setBookings(data.results || data);
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/bookings/`, {
+                headers: { 'Authorization': `Bearer ${accessToken}` }
+            });
+            const data = await response.json();
+            setBookings(Array.isArray(data) ? data : data.results || []);
         } catch (error) {
             console.error('Failed to load bookings', error);
         } finally {
@@ -36,81 +40,72 @@ export default function BookingsPage() {
         }
     };
 
+    const columns = useMemo<ColumnDef<Booking>[]>(
+        () => [
+            {
+                accessorKey: 'id',
+                header: 'Booking ID',
+                cell: info => <span className="text-xs text-gray-500 font-mono">{String(info.getValue()).substring(0,8)}...</span>,
+            },
+            {
+                accessorKey: 'vaadaka.name',
+                header: 'Item / Property',
+                cell: info => <span className="font-medium text-white">{info.getValue() as string}</span>,
+            },
+            {
+                accessorFn: row => row.user ? `${row.user.first_name} ${row.user.last_name}` : 'Unknown',
+                id: 'customer',
+                header: 'Customer',
+            },
+            {
+                accessorKey: 'status',
+                header: 'Status',
+                cell: info => {
+                    const status = info.getValue() as string;
+                    if (status === 'pending') return <span className="text-xs font-bold text-yellow-400 bg-yellow-400/10 px-2 py-1 rounded">Pending</span>;
+                    if (status === 'confirmed') return <span className="text-xs font-bold text-blue-400 bg-blue-400/10 px-2 py-1 rounded">Confirmed</span>;
+                    if (status === 'completed') return <span className="text-xs font-bold text-green-400 bg-green-400/10 px-2 py-1 rounded">Completed</span>;
+                    if (status === 'cancelled') return <span className="text-xs font-bold text-red-400 bg-red-400/10 px-2 py-1 rounded">Cancelled</span>;
+                    return <span className="text-xs font-bold text-gray-400 bg-gray-800 px-2 py-1 rounded">{status}</span>;
+                },
+            },
+            {
+                accessorKey: 'total_price',
+                header: 'Total Value',
+                cell: info => <span className="font-mono text-green-400">₹{info.getValue() as string}</span>,
+            },
+            {
+                accessorFn: row => `${new Date(row.start_datetime).toLocaleDateString()} - ${new Date(row.end_datetime).toLocaleDateString()}`,
+                id: 'dates',
+                header: 'Rental Period',
+                cell: info => <span className="text-xs text-gray-400 flex items-center gap-1"><CalendarClock size={12}/> {info.getValue() as string}</span>,
+            },
+            {
+                id: 'actions',
+                cell: () => (
+                    <button className="p-2 hover:bg-neutral-800 rounded transition-colors text-gray-400 hover:text-white">
+                        <MoreHorizontal size={16} />
+                    </button>
+                ),
+            },
+        ],
+        []
+    );
+
     return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold">Global Bookings</h2>
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                    <input
-                        type="text"
-                        placeholder="Search bookings..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="bg-neutral-900 border border-neutral-700 text-white pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:border-blue-500 w-64"
-                    />
-                </div>
+        <div className="space-y-6 animate-in fade-in duration-500">
+            <div>
+                <h2 className="text-3xl font-bold mb-2 text-white">Platform Bookings</h2>
+                <p className="text-gray-400">Monitor all rental transactions across the platform.</p>
             </div>
 
-            <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                        <thead className="bg-neutral-800 text-gray-400 uppercase font-medium">
-                            <tr>
-                                <th className="px-6 py-4">ID</th>
-                                <th className="px-6 py-4">Vaadaka</th>
-                                <th className="px-6 py-4">Renter</th>
-                                <th className="px-6 py-4">Dates</th>
-                                <th className="px-6 py-4">Status</th>
-                                <th className="px-6 py-4">Payment</th>
-                                <th className="px-6 py-4">Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-neutral-800">
-                            {bookings.map((booking) => (
-                                <tr key={booking.id} className="hover:bg-white/5 transition-colors">
-                                    <td className="px-6 py-4 font-mono text-xs text-gray-500">
-                                        {booking.id.slice(0, 8)}...
-                                    </td>
-                                    <td className="px-6 py-4 font-medium text-white">
-                                        {booking.vaadaka?.name || 'Unknown Vaadaka'}
-                                    </td>
-                                    <td className="px-6 py-4 text-gray-300">
-                                        {booking.renter?.username || 'Unknown User'}
-                                    </td>
-                                    <td className="px-6 py-4 text-gray-400 text-xs">
-                                        <div>{new Date(booking.start_datetime).toLocaleDateString()}</div>
-                                        <div>{new Date(booking.end_datetime).toLocaleDateString()}</div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`px-2 py-1 rounded text-xs font-medium ${booking.status === 'confirmed' ? 'bg-green-500/10 text-green-400' :
-                                            booking.status === 'pending' ? 'bg-yellow-500/10 text-yellow-400' :
-                                                'bg-gray-500/10 text-gray-400'
-                                            }`}>
-                                            {booking.status?.toUpperCase()}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`px-2 py-1 rounded text-xs font-medium ${booking.payment_status === 'paid' ? 'bg-green-500/10 text-green-400' :
-                                            'bg-red-500/10 text-red-400'
-                                            }`}>
-                                            {booking.payment_status?.toUpperCase()}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-white font-medium">
-                                        ₹{booking.total_amount}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+            {loading ? (
+                <div className="h-64 flex items-center justify-center border border-neutral-800 rounded-xl bg-neutral-900">
+                    <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
                 </div>
-                {loading && (
-                    <div className="p-8 flex justify-center text-gray-500">
-                        <Loader className="animate-spin" />
-                    </div>
-                )}
-            </div>
+            ) : (
+                <DataTable columns={columns} data={bookings} searchKey="vaadaka_name" />
+            )}
         </div>
     );
 }

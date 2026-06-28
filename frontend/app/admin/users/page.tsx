@@ -1,37 +1,38 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { api, User } from '@/lib/api';
+import { useState, useEffect, useMemo } from 'react';
+import { api } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
-import { Search, CheckCircle, XCircle, Shield, ShieldAlert, Loader } from 'lucide-react';
-import { useToast } from '@/contexts/ToastContext';
-import Link from 'next/link';
+import { DataTable } from '@/components/admin/DataTable';
+import { ColumnDef } from '@tanstack/react-table';
+import { MoreHorizontal, ShieldAlert, CheckCircle2, XCircle } from 'lucide-react';
 
-export default function UsersPage() {
+type User = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  is_active: boolean;
+  is_staff: boolean;
+  date_joined: string;
+};
+
+export default function AdminUsersPage() {
     const { accessToken } = useAuth();
-    const { showToast } = useToast();
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
-    const [search, setSearch] = useState('');
-    const [debouncedSearch, setDebouncedSearch] = useState('');
-
-    // Debounce search — wait 400ms after user stops typing before fetching
-    useEffect(() => {
-        const timer = setTimeout(() => setDebouncedSearch(search), 400);
-        return () => clearTimeout(timer);
-    }, [search]);
 
     useEffect(() => {
-        if (accessToken) {
-            loadUsers();
-        }
-    }, [accessToken, debouncedSearch]);
+        if (accessToken) loadUsers();
+    }, [accessToken]);
 
     const loadUsers = async () => {
         try {
-            setLoading(true);
-            const data = await api.getAdminUsers(accessToken!, debouncedSearch);
-            setUsers(data.results || data);
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/users/`, {
+                headers: { 'Authorization': `Bearer ${accessToken}` }
+            });
+            const data = await response.json();
+            setUsers(Array.isArray(data) ? data : data.results || []);
         } catch (error) {
             console.error('Failed to load users', error);
         } finally {
@@ -39,111 +40,91 @@ export default function UsersPage() {
         }
     };
 
-    const handleToggleVerify = async (userId: string) => {
-        try {
-            const result = await api.adminToggleVerifyUser(accessToken!, userId);
-            setUsers(users.map(u => u.id === userId ? { ...u, is_verified: result.is_verified } : u));
-            showToast('User verification updated', 'success');
-        } catch (error) {
-            showToast('Failed to update verification', 'error');
-        }
-    };
+    const columns = useMemo<ColumnDef<User>[]>(
+        () => [
+            {
+                accessorKey: 'id',
+                header: 'ID',
+                cell: info => <span className="text-xs text-gray-500 font-mono">{String(info.getValue()).substring(0,8)}...</span>,
+            },
+            {
+                accessorFn: row => `${row.first_name} ${row.last_name}`,
+                id: 'name',
+                header: 'Full Name',
+                cell: info => <span className="font-medium text-white">{info.getValue() as string}</span>,
+            },
+            {
+                accessorKey: 'email',
+                header: 'Email',
+            },
+            {
+                accessorKey: 'is_staff',
+                header: 'Role',
+                cell: info => {
+                    const isStaff = info.getValue() as boolean;
+                    return isStaff ? (
+                        <span className="flex items-center gap-1 text-xs font-bold text-purple-400 bg-purple-400/10 px-2 py-1 rounded w-fit">
+                            <ShieldAlert size={12} /> Admin
+                        </span>
+                    ) : (
+                        <span className="text-xs font-bold text-gray-400 bg-gray-800 px-2 py-1 rounded w-fit">
+                            Customer
+                        </span>
+                    );
+                },
+            },
+            {
+                accessorKey: 'is_active',
+                header: 'Status',
+                cell: info => {
+                    const isActive = info.getValue() as boolean;
+                    return isActive ? (
+                        <span className="flex items-center gap-1 text-xs font-bold text-green-400">
+                            <CheckCircle2 size={14} /> Active
+                        </span>
+                    ) : (
+                        <span className="flex items-center gap-1 text-xs font-bold text-red-400">
+                            <XCircle size={14} /> Banned
+                        </span>
+                    );
+                },
+            },
+            {
+                accessorKey: 'date_joined',
+                header: 'Joined',
+                cell: info => {
+                    const dateStr = info.getValue() as string;
+                    if (!dateStr) return 'N/A';
+                    const date = new Date(dateStr);
+                    return <span className="text-xs text-gray-400">{date.toLocaleDateString()}</span>;
+                },
+            },
+            {
+                id: 'actions',
+                cell: () => (
+                    <button className="p-2 hover:bg-neutral-800 rounded transition-colors text-gray-400 hover:text-white">
+                        <MoreHorizontal size={16} />
+                    </button>
+                ),
+            },
+        ],
+        []
+    );
 
     return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold">User Management</h2>
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                    <input
-                        type="text"
-                        placeholder="Search users..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="bg-neutral-900 border border-neutral-700 text-white pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:border-blue-500 w-64"
-                    />
-                </div>
+        <div className="space-y-6 animate-in fade-in duration-500">
+            <div>
+                <h2 className="text-3xl font-bold mb-2 text-white">User Management</h2>
+                <p className="text-gray-400">View and manage all registered accounts on the platform.</p>
             </div>
 
-            <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                        <thead className="bg-neutral-800 text-gray-400 uppercase font-medium">
-                            <tr>
-                                <th className="px-6 py-4">User</th>
-                                <th className="px-6 py-4">Role</th>
-                                <th className="px-6 py-4">Subscription</th>
-                                <th className="px-6 py-4">Joined</th>
-                                <th className="px-6 py-4 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-neutral-800">
-                            {users.map((user) => (
-                                <tr key={user.id} className="hover:bg-white/5 transition-colors">
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-3">
-                                            {user.profile_image ? (
-                                                <img src={user.profile_image} alt="" className="w-8 h-8 rounded-full object-cover" />
-                                            ) : (
-                                                <div className="w-8 h-8 rounded-full bg-neutral-700 flex items-center justify-center text-xs">
-                                                    {user.username[0].toUpperCase()}
-                                                </div>
-                                            )}
-                                            <div>
-                                                <div className="font-medium text-white">{user.username}</div>
-                                                <div className="text-gray-500 text-xs">{user.email}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`px-2 py-1 rounded text-xs font-medium ${user.user_type === 'provider'
-                                            ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
-                                            : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-                                            }`}>
-                                            {user.user_type?.toUpperCase()}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        {user.user_type === 'provider' ? (
-                                            user.subscription_status === 'active' ? (
-                                                <span className="flex items-center gap-1 text-green-400 text-xs font-medium">
-                                                    <CheckCircle size={13} /> Subscribed
-                                                </span>
-                                            ) : (
-                                                <span className="flex items-center gap-1 text-red-400 text-xs font-medium">
-                                                    <XCircle size={13} /> Not Subscribed
-                                                </span>
-                                            )
-                                        ) : (
-                                            <span className="text-gray-600 text-xs">N/A</span>
-                                        )}
-                                    </td>
-                                    <td className="px-6 py-4 text-gray-500">
-                                        {new Date(user.created_at || '').toLocaleDateString()}
-                                    </td>
-                                    <td className="px-6 py-4 text-right space-x-2">
-                                        <button
-                                            onClick={() => handleToggleVerify(user.id)}
-                                            className="text-gray-400 hover:text-white transition-colors"
-                                            title="Toggle Verification"
-                                        >
-                                            {user.is_verified ? <ShieldAlert size={18} className="text-yellow-500" /> : <Shield size={18} className="text-green-500" />}
-                                        </button>
-                                        <Link href={`/admin/users/${user.id}`} className="text-blue-400 hover:text-blue-300 text-xs underline">
-                                            View Details
-                                        </Link>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+            {loading ? (
+                <div className="h-64 flex items-center justify-center border border-neutral-800 rounded-xl bg-neutral-900">
+                    <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
                 </div>
-                {loading && (
-                    <div className="p-8 flex justify-center text-gray-500">
-                        <Loader className="animate-spin" />
-                    </div>
-                )}
-            </div>
+            ) : (
+                <DataTable columns={columns} data={users} searchKey="name" />
+            )}
         </div>
     );
 }
