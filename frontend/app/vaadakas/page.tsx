@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
-import { Search, MapPin, Package, IndianRupee, Crosshair, Loader2 } from 'lucide-react';
+import { Search, MapPin, Package, IndianRupee, Crosshair, Loader2, Filter } from 'lucide-react';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { getImageUrl } from '@/lib/utils';
 
@@ -30,13 +30,34 @@ export default function BrowsePage() {
     const [search, setSearch] = useState('');
     const [isNearbyLoading, setIsNearbyLoading] = useState(false);
     const [isNearbyActive, setIsNearbyActive] = useState(false);
+    const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
+    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
-    useEffect(() => { loadVaadakas(); }, []);
+    useEffect(() => { 
+        loadCategories(); 
+    }, []);
+
+    useEffect(() => { 
+        loadVaadakas(); 
+    }, [selectedCategories]);
+
+    const loadCategories = async () => {
+        try {
+            const data = await api.getCategories();
+            setCategories(Array.isArray(data) ? data : (data as any).results || []);
+        } catch (err) {
+            console.error('Failed to load categories');
+        }
+    };
 
     const loadVaadakas = async () => {
         setLoading(true);
         try {
-            const data = await api.getVaadakas();
+            const params: any = {};
+            if (selectedCategories.length > 0) {
+                params.category__in = selectedCategories.join(',');
+            }
+            const data = await api.getVaadakas(params);
             setVaadakas(Array.isArray(data) ? data : (data as any).results || []);
         } catch (err) {
             console.error('Failed to load items');
@@ -55,10 +76,16 @@ export default function BrowsePage() {
                     const data = await api.getNearbyVaadakas(position.coords.latitude, position.coords.longitude);
                     setVaadakas(Array.isArray(data) ? data : (data as any).results || []);
                     setIsNearbyActive(true);
+                    setSelectedCategories([]); // Clear categories when nearby is used
                 } catch { alert('Failed to find nearby items'); }
                 finally { setIsNearbyLoading(false); }
             },
             () => { setIsNearbyLoading(false); alert('Please allow location access.'); }
+        );
+    const toggleCategory = (id: string) => {
+        setIsNearbyActive(false); // Disable nearby when filtering
+        setSelectedCategories(prev => 
+            prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
         );
     };
 
@@ -121,6 +148,40 @@ export default function BrowsePage() {
                             {isNearbyActive ? 'Reset' : 'Near Me'}
                         </button>
                     </div>
+                    
+                    {/* Category Filters */}
+                    {categories.length > 0 && (
+                        <div className="flex gap-2 mt-4 overflow-x-auto pb-2 scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
+                            <div className="flex items-center justify-center pl-1 pr-3" style={{ color: 'var(--text-muted)' }}>
+                                <Filter size={16} />
+                            </div>
+                            <button
+                                onClick={() => { setSelectedCategories([]); setIsNearbyActive(false); }}
+                                className="whitespace-nowrap px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all rounded-full flex-shrink-0"
+                                style={{
+                                    background: selectedCategories.length === 0 && !isNearbyActive ? 'var(--highlight)' : 'var(--bg-surface-2)',
+                                    color: selectedCategories.length === 0 && !isNearbyActive ? 'var(--bg-primary)' : 'var(--text-primary)',
+                                    border: `1px solid ${selectedCategories.length === 0 && !isNearbyActive ? 'var(--highlight)' : 'var(--border)'}`,
+                                }}
+                            >
+                                All Items
+                            </button>
+                            {categories.map(cat => (
+                                <button
+                                    key={cat.id}
+                                    onClick={() => toggleCategory(cat.id)}
+                                    className="whitespace-nowrap px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all rounded-full flex-shrink-0"
+                                    style={{
+                                        background: selectedCategories.includes(cat.id) ? 'var(--highlight)' : 'var(--bg-surface-2)',
+                                        color: selectedCategories.includes(cat.id) ? 'var(--bg-primary)' : 'var(--text-primary)',
+                                        border: `1px solid ${selectedCategories.includes(cat.id) ? 'var(--highlight)' : 'var(--border)'}`,
+                                    }}
+                                >
+                                    {cat.name}
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 {/* Grid */}

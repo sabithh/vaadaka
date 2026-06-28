@@ -10,6 +10,7 @@ from .models import Vaadaka, VaadakaCategory, Review
 from .serializers import (
     VaadakaSerializer, VaadakaCreateSerializer, VaadakaCategorySerializer, ReviewSerializer
 )
+from .filters import VaadakaFilter
 import math  # Must be top-level — used in nearby() before any local import
 
 
@@ -26,7 +27,7 @@ class VaadakaViewSet(viewsets.ModelViewSet):
     
     queryset = Vaadaka.objects.all()
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['category', 'condition', 'shop', 'is_available']
+    filterset_class = VaadakaFilter
     search_fields = ['name', 'description', 'brand', 'model_number']
     ordering_fields = ['price_per_day', 'created_at']
     ordering = ['-created_at']
