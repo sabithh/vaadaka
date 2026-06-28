@@ -11,7 +11,9 @@ interface BookingModalProps {
     vaadaka: {
         id: string;
         name: string;
-        price_per_day: number;
+        price_per_day?: number;
+        price_per_month?: number;
+        price_per_year?: number;
         deposit_amount: number;
         shop: {
             name: string;
@@ -35,7 +37,8 @@ export default function BookingModal({ vaadaka, isOpen, onClose }: BookingModalP
     const [notes, setNotes] = useState('');
 
     // Calculated values
-    const [duration, setDuration] = useState(0);
+    const [durationText, setDurationText] = useState('');
+    const [rateText, setRateText] = useState('');
     const [totalPrice, setTotalPrice] = useState(0);
 
     useEffect(() => {
@@ -43,13 +46,41 @@ export default function BookingModal({ vaadaka, isOpen, onClose }: BookingModalP
             const start = new Date(startDate);
             const end = new Date(endDate);
             const diffTime = Math.abs(end.getTime() - start.getTime());
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            const diffDays = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
 
-            // Minimum 1 day
-            const days = diffDays || 1;
+            let calcPrice = 0;
+            let dText = "";
+            let rText = "";
 
-            setDuration(days);
-            setTotalPrice((vaadaka.price_per_day * days * quantity) + Number(vaadaka.deposit_amount));
+            const months = Math.max(1, Math.round(diffDays / 30));
+            const years = Math.max(1, Math.round(diffDays / 365));
+
+            if (vaadaka.price_per_year && diffDays >= 365) {
+                calcPrice = vaadaka.price_per_year * years;
+                dText = `${years} year(s)`;
+                rText = `₹${vaadaka.price_per_year} / year`;
+            } else if (vaadaka.price_per_month && diffDays >= 28) {
+                calcPrice = vaadaka.price_per_month * months;
+                dText = `${months} month(s)`;
+                rText = `₹${vaadaka.price_per_month} / month`;
+            } else if (vaadaka.price_per_day) {
+                calcPrice = vaadaka.price_per_day * diffDays;
+                dText = `${diffDays} day(s)`;
+                rText = `₹${vaadaka.price_per_day} / day`;
+            } else if (vaadaka.price_per_month) {
+                // If they book for less than a month but it only has a monthly price, charge for 1 month
+                calcPrice = vaadaka.price_per_month;
+                dText = `1 month (minimum)`;
+                rText = `₹${vaadaka.price_per_month} / month`;
+            } else if (vaadaka.price_per_year) {
+                calcPrice = vaadaka.price_per_year;
+                dText = `1 year (minimum)`;
+                rText = `₹${vaadaka.price_per_year} / year`;
+            }
+
+            setDurationText(dText);
+            setRateText(rText);
+            setTotalPrice((calcPrice * quantity) + Number(vaadaka.deposit_amount));
         }
     }, [startDate, endDate, quantity, vaadaka]);
 
@@ -142,12 +173,12 @@ export default function BookingModal({ vaadaka, isOpen, onClose }: BookingModalP
                         {/* Price Summary */}
                         <div className="bg-gray-900/50 p-4 rounded-lg border border-gray-800 space-y-3">
                             <div className="flex justify-between items-center text-sm">
-                                <span className="text-gray-400">Rate per day</span>
-                                <span className="text-white">₹{vaadaka.price_per_day}</span>
+                                <span className="text-gray-400">Rate</span>
+                                <span className="text-white">{rateText}</span>
                             </div>
                             <div className="flex justify-between items-center text-sm">
                                 <span className="text-gray-400">Duration</span>
-                                <span className="text-white">{duration} days</span>
+                                <span className="text-white">{durationText}</span>
                             </div>
                             <div className="flex justify-between items-center text-sm">
                                 <span className="text-gray-400">Deposit (Refundable)</span>
@@ -211,7 +242,7 @@ export default function BookingModal({ vaadaka, isOpen, onClose }: BookingModalP
                     <button
                         form="booking-form"
                         type="submit"
-                        disabled={loading || !startDate || !endDate || duration <= 0}
+                        disabled={loading || !startDate || !endDate || !durationText}
                         className="w-full py-4 bg-primary hover:bg-red-700 text-white font-bold uppercase tracking-widest rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(220,38,38,0.3)] hover:shadow-[0_0_30px_rgba(220,38,38,0.5)]"
                     >
                         {loading ? (
