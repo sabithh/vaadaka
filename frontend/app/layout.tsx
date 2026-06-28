@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Script from 'next/script';
 import { Bebas_Neue, Barlow_Condensed, Noto_Sans_Malayalam } from 'next/font/google';
 import './globals.css';
-import Navbar from '@/components/Navbar';
+import NavbarWrapper from '@/components/NavbarWrapper';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
@@ -59,7 +59,7 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             <ToastProvider>
-              <Navbar />
+              <NavbarWrapper />
               {children}
               <Script src="https://checkout.razorpay.com/v1/checkout.js" />
             </ToastProvider>
