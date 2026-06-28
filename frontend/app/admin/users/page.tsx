@@ -13,6 +13,7 @@ type User = {
   first_name: string;
   last_name: string;
   email: string;
+  user_type: 'renter' | 'provider';
   is_active: boolean;
   is_staff: boolean;
   is_superuser: boolean;
@@ -137,13 +138,27 @@ export default function AdminUsersPage() {
                 header: 'Role',
                 cell: info => {
                     const isStaff = info.getValue() as boolean;
-                    return isStaff ? (
-                        <span className="flex items-center gap-1 text-xs font-bold text-red-500 bg-red-500/10 px-2 py-1 rounded w-fit border border-red-500/20">
-                            <ShieldAlert size={12} /> Admin
-                        </span>
-                    ) : (
-                        <span className="text-xs font-bold text-gray-400 bg-gray-800 px-2 py-1 rounded w-fit">
-                            Customer
+                    const userType = info.row.original.user_type;
+                    
+                    if (isStaff) {
+                        return (
+                            <span className="flex items-center gap-1 text-xs font-bold text-red-500 bg-red-500/10 px-2 py-1 rounded w-fit border border-red-500/20">
+                                <ShieldAlert size={12} /> Admin
+                            </span>
+                        );
+                    }
+                    
+                    if (userType === 'provider') {
+                        return (
+                            <span className="text-xs font-bold text-blue-400 bg-blue-500/10 px-2 py-1 rounded w-fit border border-blue-500/20">
+                                Owner
+                            </span>
+                        );
+                    }
+                    
+                    return (
+                        <span className="text-xs font-bold text-gray-400 bg-gray-800 px-2 py-1 rounded w-fit border border-gray-700">
+                            Buyer
                         </span>
                     );
                 },
